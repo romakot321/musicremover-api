@@ -1,0 +1,75 @@
+[project]
+name = "app"
+version = "0.0.1"
+
+dependencies = [
+    "aiohttp>=3.11.18",
+    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "gunicorn>=23.0.0",
+    "itsdangerous>=2.2.0",
+    "loguru>=0.7.3",
+    "pydantic>=2.11.4",
+    "pydantic-settings>=2.9.1",
+    "python-multipart>=0.0.20",
+    "requests>=2.32.3",
+    "sqlalchemy>=2.0.41",
+    "uvicorn>=0.34.2",
+]
+requires-python = ">=3.13"
+authors = [
+    {name = "Roman", email="play62342@gmail.com"}
+]
+venvPath = "."
+venv = ".venv"
+
+[build-system]
+requires = ["uv_build>=0.7.4,<0.8.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "src"
+module-root = "backend"
+
+[tool.ruff]
+line-length = 120
+output-format = "grouped"
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+  # isort
+  "I",
+  # bugbear rules
+  "B",
+  # remove unused imports
+  "F401",
+  # bare except statements
+  "E722",
+  # unused arguments
+  "ARG",
+  # typing.TYPE_CHECKING misuse
+  "TCH004",
+  "TCH005",
+  # import rules
+  "TID251",
+]
+ignore = [
+  # mutable defaults
+  "B006",
+  # function calls in defaults
+  "B008",
+]
+
+[tool.ruff.lint.isort]
+length-sort = true
+length-sort-straight = true
+combine-as-imports = true
+extra-standard-library = ["typing_extensions"]
+
+[tool.pyright]
+pythonVersion="3.13"
+executionEnvironments = [
+    { root = "backend" }
+]

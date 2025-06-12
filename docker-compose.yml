@@ -1,0 +1,53 @@
+services:
+  app:
+    build:
+      context: ./
+    container_name: ${PROJECT_NAME}_app
+    depends_on:
+      - db
+    env_file:
+      - .env
+    restart: always
+    networks:
+      global_network:
+      default:
+    volumes:
+      - app_localstorage:/app/storage
+      - app_logs:/app/logs
+
+  db:
+    &db
+    image: postgres:17.4
+    container_name: ${PROJECT_NAME}_db
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./etc/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    restart: always
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      default:
+
+  db-dev:
+    <<: *db
+    container_name: ${PROJECT_NAME}_dev_db
+    profiles:
+      - dev
+    ports:
+      - "5432:5432"
+
+networks:
+  default:
+  global_network:
+    external: true
+
+volumes:
+  postgres_data:
+  app_localstorage:
+  app_logs:
+
