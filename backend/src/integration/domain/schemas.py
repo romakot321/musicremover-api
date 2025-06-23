@@ -18,7 +18,7 @@ class LalalaiSplitRequest(BaseModel):
 class LalalaiSplitResponse(BaseModel):
     status: Literal["success", "error"]
     error: str | None = None
-    task_id: list[str]
+    task_id: str
 
 
 class LalalaiCheckResponse(BaseModel):

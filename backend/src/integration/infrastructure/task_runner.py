@@ -1,5 +1,6 @@
 import json
 import aiohttp
+from urllib.parse import urlencode
 from io import BytesIO
 
 from src.core.config import settings
@@ -18,7 +19,7 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
     api_url: str = "https://www.lalal.ai"
 
     def __init__(self, client: IHttpClient) -> None:
-        super().__init__(client=client, source_url=self.api_url)
+        super().__init__(client=client, source_url=self.api_url, token=settings.LALALAI_API_TOKEN)
 
     async def _upload_file(self, file: BytesIO) -> LalalaiUploadResponse:
         file.name = "result.mp3"
@@ -36,8 +37,9 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
         uploaded_file = await self._upload_file(data.file)
 
         request = TaskRunToRequestMapper().map_one(data, uploaded_file.id)
-        params = request.params[0].model_dump_json()
-        response = await self.request("POST", "/api/split", data=params)
+        data = "params=" + json.dumps([request.params[0].model_dump(exclude=["dereverb_enabled", "noise_cancelling_level", "splitter", "enhanced_processing_enabled"])])
+
+        response = await self.request("POST", "/api/split/", data=data.encode(), headers={"content-Type": "application/x-www-form-urlencoded"})
 
         result = self.validate_response(response.data, LalalaiSplitResponse)
         if result.status == "success":
