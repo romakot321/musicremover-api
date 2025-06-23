@@ -7,7 +7,7 @@ from loguru import logger
 from src.task.domain.dtos import TaskCreateDTO, TaskResultDTO
 from src.task.domain.mappers import IntegrationResponseToDomainMapper
 from src.task.domain.entities import TaskRun, TaskStatus, TaskUpdate
-from src.integration.domain.exceptions import IntegrationRunException, IntegrationRequestException
+from src.integration.domain.exceptions import IntegrationRequestException
 from src.task.application.interfaces.task_uow import ITaskUnitOfWork
 from src.task.application.interfaces.task_runner import ITaskRunner, TResponseData
 
@@ -53,8 +53,7 @@ class RunTaskUseCase:
             return "Generation run error: Timeout"
         except IntegrationRequestException as e:
             return "Request error: " + str(e)
-        except IntegrationRunException as e:
-            return "Generation run error: " + str(e)
         except Exception as e:
+            logger.exception(e)
             return "Internal exception"
         return result
