@@ -44,8 +44,6 @@ class Settings(BaseSettings):
             return self
         if self.API_TOKEN == "123":
             raise ValueError("Define not default api_token env")
-        if self.APPHUD_SECRET_TOKEN == "REPLACEME":
-            raise ValueError("Define not default APPHUD_SECRET_TOKEN env")
         return self
 
     @field_validator("DATABASE_URI")

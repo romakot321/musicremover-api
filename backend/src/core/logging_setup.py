@@ -30,7 +30,7 @@ def add_http_info(request, response):
 
 
 def setup_fastapi_logging(app: FastAPI):
-    fastapi_logger = loguru.Logger()
+    fastapi_logger = logger.bind(name="fastapi")
     fastapi_logger = fastapi_logger.patch(add_app_name)
     fastapi_logger.add(
         "/app/logs/fastapi.json",
