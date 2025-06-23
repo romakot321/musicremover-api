@@ -76,6 +76,7 @@ class HttpApiClient(AuthMixin):
         if not response.ok:
             if response.status == 401:
                 raise IntegrationUnauthorizedExeception()
+            logger.error(str(response))
             raise IntegrationRequestException(message=await response.text())
 
         try:

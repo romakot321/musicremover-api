@@ -1,4 +1,5 @@
 import json
+import aiohttp
 from io import BytesIO
 
 from src.core.config import settings
@@ -20,10 +21,13 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
         super().__init__(client=client, source_url=self.api_url)
 
     async def _upload_file(self, file: BytesIO) -> LalalaiUploadResponse:
-        response = await self.request(
-            "POST", "/api/upload", data=file.read(), headers={"Content-Disposition": "attachment; filename=result.mp3"}
-        )
-        result = self.validate_response(response.data, LalalaiUploadResponse)
+        file.name = "result.mp3"
+        async with aiohttp.ClientSession() as session:
+            response = await session.post(
+                self.api_url + "/api/upload/", data=file, headers={"Content-Disposition": 'attachment; filename="result.mp3"', "Authorization": f"license {self.token}"}
+            )
+            response = await response.json()
+        result = self.validate_response(response, LalalaiUploadResponse)
         if result.status == "error":
             raise IntegrationRequestException(result.error)
         return result
