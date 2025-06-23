@@ -8,7 +8,8 @@ from src.core.http.client import IHttpClient
 from src.task.domain.entities import TaskRun
 from src.integration.domain.dtos import IntegrationTaskResultDTO
 from src.integration.domain.mappers import TaskRunToRequestMapper
-from src.integration.domain.schemas import LalalaiCheckResponse, LalalaiSplitResponse, LalalaiUploadResponse
+from src.integration.domain.schemas import LalalaiCheckResponse, LalalaiSplitResponse, LalalaiUploadResponse, \
+    LalalaiCheckResponseResult
 from src.integration.domain.exceptions import IntegrationRequestException
 from src.task.application.interfaces.task_runner import ITaskRunner
 from src.integration.infrastructure.http_api_client import HttpApiClient
@@ -47,9 +48,13 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
         return IntegrationTaskResultDTO(status="error", error=result.error)
 
     async def get_result(self, external_task_id: str) -> IntegrationTaskResultDTO | None:
-        response = await self.request("POST", "/api/check", data=f"id={external_task_id}")
+        response = await self.request("POST", "/api/check/", data=f"id={external_task_id}", headers={"content-Type": "application/x-www-form-urlencoded"})
 
-        result = self.validate_response(response.data, LalalaiCheckResponse)
+        result = LalalaiCheckResponse(
+            status=response.data.get("status"),
+            error=response.data.get("error"),
+            result={k: LalalaiCheckResponseResult.model_validate(v) for k, v in response.data.get("result", {}).items()}
+        )
         if result.status == "error":
             raise IntegrationRequestException(result.error)
         task = list(result.result.values())[0]

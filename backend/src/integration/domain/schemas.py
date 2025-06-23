@@ -21,25 +21,27 @@ class LalalaiSplitResponse(BaseModel):
     task_id: str
 
 
-class LalalaiCheckResponse(BaseModel):
-    class Result(BaseModel):
-        class Task(BaseModel):
-            state: Literal["success", "error", "progress", "cancelled"]
-            error: str | None = None
-            progress: int | None = None
-
-        class Split(BaseModel):
-            stem_track: str
-            back_track: str
-
-        status: Literal["success", "error"]
-        name: str | None = None
+class LalalaiCheckResponseResult(BaseModel):
+    class Task(BaseModel):
+        state: Literal["success", "error", "progress", "cancelled"]
         error: str | None = None
-        task: Task | None = None
-        split: Split | None = None
+        progress: int | None = None
+
+    class Split(BaseModel):
+        stem_track: str
+        back_track: str
 
     status: Literal["success", "error"]
-    result: dict[str, Result]
+    name: str | None = None
+    error: str | None = None
+    task: Task | None = None
+    split: Split | None = None
+
+
+class LalalaiCheckResponse(BaseModel):
+
+    status: Literal["success", "error"]
+    result: dict[str, LalalaiCheckResponseResult]
     error: str | None = None
 
 
