@@ -53,7 +53,7 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
         result = LalalaiCheckResponse(
             status=response.data.get("status"),
             error=response.data.get("error"),
-            result={k: LalalaiCheckResponseResult.model_validate(v) for k, v in response.data.get("result", {}).items()}
+            result={k: LalalaiCheckResponseResult.model_validate(v) for k, v in response.data.get("result", {}).items() if v is not None}
         )
         if result.status == "error":
             raise IntegrationRequestException(result.error)
