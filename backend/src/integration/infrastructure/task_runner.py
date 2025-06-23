@@ -14,7 +14,7 @@ from src.integration.infrastructure.http_api_client import HttpApiClient
 
 class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
     token: str = settings.LALALAI_API_TOKEN
-    api_url: str = "https://www.lalal.ai/api/"
+    api_url: str = "https://www.lalal.ai"
 
     def __init__(self, client: IHttpClient) -> None:
         super().__init__(client=client, source_url=self.api_url)
@@ -32,7 +32,7 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
         uploaded_file = await self._upload_file(data.file)
 
         request = TaskRunToRequestMapper().map_one(data, uploaded_file.id)
-        params = json.dumps(request.params)
+        params = request.params[0].model_dump_json()
         response = await self.request("POST", "/api/split", data=params)
 
         result = self.validate_response(response.data, LalalaiSplitResponse)

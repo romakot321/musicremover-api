@@ -67,8 +67,11 @@ def split_file(file_id, license, stem, splitter, enhanced_processing, noise_canc
 
     encoded_args = urlencode(query_args).encode('utf-8')
     request = Request(url_for_split, encoded_args, headers=headers)
+    print(url_for_split, encoded_args, headers)
+    print(request)
     with urlopen(request) as response:
         split_result = json.load(response)
+        print(split_result)
         if split_result["status"] == "error":
             raise RuntimeError(split_result["error"])
 
