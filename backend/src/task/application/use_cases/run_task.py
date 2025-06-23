@@ -4,6 +4,7 @@ from uuid import UUID
 
 from loguru import logger
 
+from src.integration.domain.dtos import IntegrationTaskResultDTO
 from src.task.domain.dtos import TaskCreateDTO, TaskResultDTO
 from src.task.domain.mappers import IntegrationResponseToDomainMapper
 from src.task.domain.entities import TaskRun, TaskStatus, TaskUpdate
@@ -30,9 +31,25 @@ class RunTaskUseCase:
             await self._set_task_status(task_id, status=TaskStatus.failed, error=result)
             return
 
-        logger.info(f"Task {task_id} result: {result}")
-        result_domain = IntegrationResponseToDomainMapper().map_one(result)
+        result_domain = await self._wait_for_complete(result)
+
+        if isinstance(result_domain, str):
+            await self._set_task_status(task_id, status=TaskStatus.failed, error=result_domain)
+            return
+
+        logger.info(f"Task {task_id} result: {result_domain}")
         await self._store_result(task_id, result_domain)
+
+    async def _wait_for_complete(self, result: IntegrationTaskResultDTO) -> TaskResultDTO | str:
+        for _ in range(self.TIMEOUT_SECONDS):
+            await asyncio.sleep(1)
+            response = await self.runner.get_result(result.external_task_id)
+            if response is None:
+                continue
+            response = IntegrationResponseToDomainMapper().map_one(response)
+            if response.status == TaskStatus.failed or response.status == TaskStatus.finished:
+                return response
+        return "Generation timeout exceed"
 
     async def _store_result(self, task_id: UUID, result: TaskResultDTO):
         async with self.uow:
