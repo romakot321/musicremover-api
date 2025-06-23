@@ -1,8 +1,6 @@
 from src.task.domain.dtos import TaskResultDTO
 from src.task.domain.entities import TaskSource, TaskStatus
-from src.integration.domain.dtos import PlayHTStatus, PlayHTResponseDTO
 from src.task.application.interfaces.task_runner import TResponseData
-from src.integration.infrastructure.external_api.topmediai.schemas import TopMediaiCoverResponse
 
 
 class IntegrationResponseToDomainMapper:
@@ -26,40 +24,3 @@ class IntegrationResponseToDomainMapper:
             return TaskSource.playht
         elif hasattr(data, "status") and hasattr(data, "data"):
             return TaskSource.topmediai
-
-
-class TopMediaiResponseToDomainMapper:
-    def map_one(self, data: TopMediaiCoverResponse) -> TaskResultDTO:
-        status = self._map_status(data.status)
-        return TaskResultDTO(
-            status=status,
-            result=data.data.combine_file,
-            error=data.message if status is TaskStatus.failed else None
-        )
-
-    @staticmethod
-    def _map_status(status: int) -> TaskStatus:
-        if status == 200:
-            return TaskStatus.finished
-        elif status >= 400:
-            return TaskStatus.failed
-        return TaskStatus.queued
-
-
-class PlayHTResponseToDomainMapper:
-    def map_one(self, data: PlayHTResponseDTO) -> TaskResultDTO:
-        return TaskResultDTO(
-            status=self._map_playht_status(data.status),
-            result=data.output.url if data.output else None,
-            error=data.model_dump_json() if data.status == PlayHTStatus.failed else None
-        )
-
-    def _map_playht_status(self, status: PlayHTStatus) -> TaskStatus:
-        if status == PlayHTStatus.pending:
-            return TaskStatus.queued
-        if status == PlayHTStatus.in_progress:
-            return TaskStatus.started
-        if status == PlayHTStatus.completed:
-            return TaskStatus.finished
-        if status == PlayHTStatus.failed:
-            return TaskStatus.failed

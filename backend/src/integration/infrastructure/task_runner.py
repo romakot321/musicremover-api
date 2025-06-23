@@ -33,7 +33,7 @@ class LalalaiTaskRunner(HttpApiClient, ITaskRunner[IntegrationTaskResultDTO]):
 
         request = TaskRunToRequestMapper().map_one(data, uploaded_file.id)
         params = json.dumps(request.params)
-        response = await self.request("POST", "/api/split", data=f"params={params}")
+        response = await self.request("POST", "/api/split", data=params)
 
         result = self.validate_response(response.data, LalalaiSplitResponse)
         if result.status == "success":
